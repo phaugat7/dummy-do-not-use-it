@@ -1,0 +1,30 @@
+# ─────────────────────────────────────────────────────────────
+# Outbox Event Configuration
+# Add these to your existing application.yml
+# ─────────────────────────────────────────────────────────────
+
+outbox:
+  scheduler:
+    interval-ms: 30000       # Safety-net scheduler runs every 30 seconds
+    batch-size: 100          # Max events per scheduler run
+  cleanup:
+    hours-old: 48            # Delete SENT events older than 48 hours
+    cron: "0 0 2 * * *"     # Run cleanup daily at 2 AM
+
+# ─────────────────────────────────────────────────────────────
+# Spring Kafka Producer Config
+# Adjust broker addresses and serializers to your environment
+# ─────────────────────────────────────────────────────────────
+
+spring:
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      acks: all                    # Wait for all replicas — strongest durability
+      retries: 3                   # Kafka-level retries before giving up
+      properties:
+        enable.idempotence: true   # Prevent duplicate messages at broker level
+        max.in.flight.requests.per.connection: 5
+        delivery.timeout.ms: 30000
